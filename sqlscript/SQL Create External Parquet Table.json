@@ -1,0 +1,17 @@
+{
+	"name": "SQL Create External Parquet Table",
+	"properties": {
+		"content": {
+			"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'synapse-container_hemanthadlsgen2_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [synapse-container_hemanthadlsgen2_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://synapse-container@hemanthadlsgen2.dfs.core.windows.net' \n\t)\nGO\n\nCREATE EXTERNAL TABLE dbo.house (\n\t[price] bigint,\n\t[area] bigint,\n\t[bedrooms] bigint,\n\t[bathrooms] bigint,\n\t[stories] bigint,\n\t[mainroad] nvarchar(4000),\n\t[guestroom] nvarchar(4000),\n\t[basement] nvarchar(4000),\n\t[hotwaterheating] nvarchar(4000),\n\t[airconditioning] nvarchar(4000),\n\t[parking] bigint,\n\t[prefarea] nvarchar(4000),\n\t[furnishingstatus] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'house-price.parquet',\n\tDATA_SOURCE = [synapse-container_hemanthadlsgen2_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.house\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "quant-db",
+				"poolName": "Built-in"
+			},
+			"resultLimit": -1
+		},
+		"type": "SqlQuery"
+	}
+}
