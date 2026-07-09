@@ -22,6 +22,57 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('workspaceName'), '/QuantCompute')]",
+			"type": "Microsoft.Synapse/workspaces/bigDataPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SynapseNotebook-Part1')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "Spark Pool Text",
+						"type": "SynapseNotebook",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": "SparkExplorationPart-1",
+								"type": "NotebookReference"
+							},
+							"snapshot": true,
+							"conf": {
+								"spark.dynamicAllocation.enabled": null,
+								"spark.dynamicAllocation.minExecutors": null,
+								"spark.dynamicAllocation.maxExecutors": null
+							},
+							"numExecutors": null
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/notebooks/SparkExplorationPart-1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/quant-synapse-WorkspaceDefaultSqlServer')]",
 			"type": "Microsoft.Synapse/workspaces/linkedServices",
 			"apiVersion": "2019-06-01-preview",
@@ -94,26 +145,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/SQL Create External Table')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"content": {
-					"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseDelimitedTextFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat] \n\tWITH ( FORMAT_TYPE = DELIMITEDTEXT ,\n\t       FORMAT_OPTIONS (\n\t\t\t FIELD_TERMINATOR = ',',\n\t\t\t FIRST_ROW = 11,\n\t\t\t USE_TYPE_DEFAULT = FALSE\n\t\t\t))\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'synapse-container_hemanthadlsgen2_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [synapse-container_hemanthadlsgen2_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://synapse-container@hemanthadlsgen2.dfs.core.windows.net' \n\t)\nGO\n\nDROP EXTERNAL TABLE dbo.GaintPeople;\n\nCREATE EXTERNAL TABLE dbo.GaintPeople (\n\t[id] bigint,\n\t[name] nvarchar(4000),\n\t[gender] nvarchar(4000),\n\t[country] nvarchar(4000),\n\t[continent] nvarchar(4000),\n\t[height_cm] bigint,\n\t[height_ft_in] nvarchar(4000),\n\t[weight_kg] bigint,\n\t[birth_year] bigint,\n\t[death_year] bigint,\n\t[lifespan] bigint,\n\t[occupation] nvarchar(4000),\n\t[medical_condition] nvarchar(4000),\n\t[is_alive] bigint\n\t)\n\tWITH (\n\tLOCATION = 'tallest_people_in_the_world.csv',\n\tDATA_SOURCE = [synapse-container_hemanthadlsgen2_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseDelimitedTextFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.GaintPeople\nGO",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "quant-db",
-						"poolName": "Built-in"
-					},
-					"resultLimit": -1
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/SQL Create External Parquet Table')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
@@ -134,20 +165,20 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/SQL OpenRowSet')]",
+			"name": "[concat(parameters('workspaceName'), '/SQL Create External Table')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"content": {
-					"query": "",
+					"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseDelimitedTextFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat] \n\tWITH ( FORMAT_TYPE = DELIMITEDTEXT ,\n\t       FORMAT_OPTIONS (\n\t\t\t FIELD_TERMINATOR = ',',\n\t\t\t FIRST_ROW = 11,\n\t\t\t USE_TYPE_DEFAULT = FALSE\n\t\t\t))\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'synapse-container_hemanthadlsgen2_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [synapse-container_hemanthadlsgen2_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://synapse-container@hemanthadlsgen2.dfs.core.windows.net' \n\t)\nGO\n\nDROP EXTERNAL TABLE dbo.GaintPeople;\n\nCREATE EXTERNAL TABLE dbo.GaintPeople (\n\t[id] bigint,\n\t[name] nvarchar(4000),\n\t[gender] nvarchar(4000),\n\t[country] nvarchar(4000),\n\t[continent] nvarchar(4000),\n\t[height_cm] bigint,\n\t[height_ft_in] nvarchar(4000),\n\t[weight_kg] bigint,\n\t[birth_year] bigint,\n\t[death_year] bigint,\n\t[lifespan] bigint,\n\t[occupation] nvarchar(4000),\n\t[medical_condition] nvarchar(4000),\n\t[is_alive] bigint\n\t)\n\tWITH (\n\tLOCATION = 'tallest_people_in_the_world.csv',\n\tDATA_SOURCE = [synapse-container_hemanthadlsgen2_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseDelimitedTextFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.GaintPeople\nGO",
 					"metadata": {
 						"language": "sql"
 					},
 					"currentConnection": {
-						"databaseName": "master",
+						"databaseName": "quant-db",
 						"poolName": "Built-in"
 					},
-					"resultLimit": 5000
+					"resultLimit": -1
 				},
 				"type": "SqlQuery"
 			},
@@ -174,11 +205,22 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/QuantCompute')]",
-			"type": "Microsoft.Synapse/workspaces/bigDataPools",
+			"name": "[concat(parameters('workspaceName'), '/SQL OpenRowSet')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"annotations": []
+				"content": {
+					"query": "",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
 			},
 			"dependsOn": []
 		},
@@ -203,7 +245,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "acc0204a-c0d2-44ff-aaf1-8b3a92112034"
+						"spark.autotune.trackingId": "afd50971-1215-4bb6-ae48-5229a34fc47d"
 					}
 				},
 				"metadata": {
@@ -228,15 +270,13 @@
 						"sparkVersion": "3.5",
 						"nodeCount": 10,
 						"cores": 4,
-						"memory": 28,
-						"automaticScaleJobs": false
+						"memory": 28
 					},
 					"sessionKeepAliveTimeout": 30
 				},
 				"cells": [
 					{
 						"cell_type": "code",
-						"metadata": {},
 						"source": [
 							"print(\"Hello\")"
 						],
@@ -245,7 +285,6 @@
 					},
 					{
 						"cell_type": "code",
-						"metadata": {},
 						"source": [
 							"from pyspark.sql import functions as F"
 						],
@@ -255,7 +294,6 @@
 					{
 						"cell_type": "code",
 						"metadata": {
-							"microsoft": {},
 							"collapsed": false
 						},
 						"source": [
@@ -286,7 +324,6 @@
 					},
 					{
 						"cell_type": "code",
-						"metadata": {},
 						"source": [
 							"sales_Q4.write.format(\"parquet\").save(\"/notebook/salesQ4\")"
 						],
@@ -298,50 +335,29 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/SynapseNotebookPart1')]",
-			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"name": "[concat(parameters('workspaceName'), '/QuantCompute')]",
+			"type": "Microsoft.Synapse/workspaces/bigDataPools",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"activities": [
-					{
-						"name": "NotebookToMoveSalesData",
-						"type": "SynapseNotebook",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"notebook": {
-								"referenceName": "SparkExplorationPart-1",
-								"type": "NotebookReference"
-							},
-							"snapshot": true,
-							"sparkPool": {
-								"referenceName": "QuantCompute",
-								"type": "BigDataPoolReference"
-							},
-							"executorSize": "Small",
-							"conf": {
-								"spark.dynamicAllocation.enabled": true
-							},
-							"driverSize": "Small"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
+				"autoPause": {
+					"enabled": true,
+					"delayInMinutes": 10
 				},
+				"autoScale": {
+					"enabled": true,
+					"maxNodeCount": 3,
+					"minNodeCount": 3
+				},
+				"nodeCount": 10,
+				"nodeSize": "Small",
+				"nodeSizeFamily": "MemoryOptimized",
+				"sparkVersion": "3.5",
+				"isComputeIsolationEnabled": false,
+				"sessionLevelPackagesEnabled": false,
 				"annotations": []
 			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/notebooks/SparkExplorationPart-1')]",
-				"[concat(variables('workspaceId'), '/bigDataPools/QuantCompute')]"
-			]
+			"dependsOn": [],
+			"location": "westus"
 		}
 	]
 }
