@@ -15,6 +15,10 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
+					"notebook": {
+						"referenceName": "SparkExplorationPart-1",
+						"type": "NotebookReference"
+					},
 					"snapshot": true
 				}
 			}
